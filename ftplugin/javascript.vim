@@ -24,7 +24,12 @@ function! b:VimJsUtil_Tag()
         endif
         " strip the .js (we'll add it later)
         let requireArg = substitute(getreg('z'), '\.js$', '', '')
-        if match(requireArg, './') == 0
+        let dotdotStr = ''
+        if match(requireArg, '\(../\)\+') >= 0
+            let dotdotStr = matchstr(requireArg, '\(../\)\+')
+            let pattern = substitute(requireArg, '\(../\)\+', expand('%:h') . '/' . dotdotStr . '**/', '') . ext
+            let matches = split(glob(pattern), '\n')
+        elseif match(requireArg, './') == 0
             let pattern = substitute(requireArg, '^\.', expand('%:h') . '/**', '') . ext
             let matches = split(glob(pattern), '\n')
         else
@@ -32,13 +37,13 @@ function! b:VimJsUtil_Tag()
             let pattern = '*' . requireArg . ext
             let matches = split(system('git ls-files -- ' . pattern), '\n')
             " fall back on file glob
-            if match(matches[0], 'Not a git repository') != -1
+            if len(matches) == 0 || match(matches[0], 'Not a git repository') != -1
                 let pattern = '**/' . requireArg . ext
                 let matches = split(glob(pattern), '\n')
             endif
         endif
         if len(matches) == 1
-            exec ":e " . matches[0]
+            exec ":e " . simplify(matches[0])
         elseif len(matches) > 1
             " TODO: show a list (extra credit: order list based on lru and proximity to current file in dir hierarchy)
             " TODO: prefer files that share a prefix with the current file
