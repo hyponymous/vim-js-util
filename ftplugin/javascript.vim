@@ -22,6 +22,7 @@ function! b:VimJsUtil_Tag()
         else
             exec "normal |f'vi'\"zy|"
         endif
+        let matches = []
         " strip the .js (we'll add it later)
         let requireArg = substitute(getreg('z'), '\.js$', '', '')
         if match(requireArg, '\(../\)\+') == 0
@@ -32,9 +33,14 @@ function! b:VimJsUtil_Tag()
             let pattern = substitute(requireArg, '^\.', expand('%:h') . '/**', '') . ext
             let matches = split(glob(pattern), '\n')
         else
-            " assume we're using git
             let pattern = '*' . requireArg . ext
+            " try both git ls-files and git status
+            " - git ls-files won't pick up untracked files
+            " - git status won't pick up unchanged files
             let matches = split(system('git ls-files -- ' . pattern), '\n')
+            if len(matches) == 0 || match(matches[0], 'Not a git repository') != -1
+                let matches = split(system('git status --porcelain -- ' . pattern . ' | sed -e "s/^.. //"'), '\n')
+            endif
             " fall back on file glob
             if len(matches) == 0 || match(matches[0], 'Not a git repository') != -1
                 let pattern = '**/' . requireArg . ext
