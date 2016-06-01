@@ -25,13 +25,14 @@ function! b:VimJsUtil_Tag()
         let matches = []
         " strip the .js (we'll add it later)
         let requireArg = substitute(getreg('z'), '\.js$', '', '')
-        if match(requireArg, '\(../\)\+') == 0
-            let dotdotStr = matchstr(requireArg, '\(../\)\+')
-            let pattern = substitute(requireArg, '\(../\)\+', expand('%:h') . '/' . dotdotStr . '**/', '') . ext
-            let matches = split(glob(pattern), '\n')
-        elseif match(requireArg, './') == 0
-            let pattern = substitute(requireArg, '^\.', expand('%:h') . '/**', '') . ext
-            let matches = split(glob(pattern), '\n')
+        " use exact matching for relative paths
+        if match(requireArg, '\(\.\./\)\+') == 0 || match(requireArg, '\./') == 0
+            let pattern = simplify(expand('%:h') . '/' . requireArg)
+            if filereadable(pattern . ext)
+                let matches = [pattern . ext]
+            elseif filereadable(pattern . '/index.js')
+                let matches = [pattern . '/index.js']
+            endif
         else
             let pattern = '*' . requireArg . ext
             " try both git ls-files and git status
