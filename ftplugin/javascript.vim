@@ -24,8 +24,7 @@ function! b:VimJsUtil_Tag()
         endif
         " strip the .js (we'll add it later)
         let requireArg = substitute(getreg('z'), '\.js$', '', '')
-        let dotdotStr = ''
-        if match(requireArg, '\(../\)\+') >= 0
+        if match(requireArg, '\(../\)\+') == 0
             let dotdotStr = matchstr(requireArg, '\(../\)\+')
             let pattern = substitute(requireArg, '\(../\)\+', expand('%:h') . '/' . dotdotStr . '**/', '') . ext
             let matches = split(glob(pattern), '\n')
