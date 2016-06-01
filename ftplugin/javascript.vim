@@ -8,6 +8,9 @@ endif
 let g:loaded_vimjsutil = 1
 
 function! b:VimJsUtil_Tag()
+    let lastReg = getreg('')
+    let zReg = getreg('z')
+
     let line = getline('.')
     " TODO: pull out the require statement under the cursor
     if match(line, 'require(') >= 0
@@ -47,5 +50,8 @@ function! b:VimJsUtil_Tag()
         " TODO: make tern dependency explicit
         TernDef
     endif
+
+    call setreg('', lastReg)
+    call setreg('z', zReg)
 endfunction
 
