@@ -1,13 +1,13 @@
 source $VIMRUNTIME/ftplugin/javascript.vim
 
-nnoremap <buffer>  :call b:VimJsUtil_Tag()<CR>
+nnoremap <buffer>  :call VimJsUtil_Tag()<CR>
 
 if exists('g:loaded_vimjsutil') || &cp
   finish
 endif
 let g:loaded_vimjsutil = 1
 
-function! b:VimJsUtil_Tag()
+function! VimJsUtil_Tag()
     let lastReg = getreg('')
     let zReg = getreg('z')
 
